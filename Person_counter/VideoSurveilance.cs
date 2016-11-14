@@ -45,7 +45,7 @@ namespace VideoSurveilance
             try
             {
                 // test for test
-                _cameraCapture = new Capture(1);
+                _cameraCapture = new Capture();
                 _cameraCapture.FlipHorizontal = !_cameraCapture.FlipHorizontal;
 
             }
@@ -99,7 +99,7 @@ namespace VideoSurveilance
 
 
             }
-
+            /*
             Mat smoothedFrame = new Mat();
             CvInvoke.GaussianBlur(frame, smoothedFrame, new Size(3, 3), 1); //filter out noises
                                                                             //frame._SmoothGaussian(3); 
@@ -122,7 +122,7 @@ namespace VideoSurveilance
 
 
             }
-
+            */
             imageBox1.Image = ImageFrame;
             //Console.WriteLine(ImageFrame.Size);
             //imageBox2.Image = frame;
@@ -172,12 +172,11 @@ namespace VideoSurveilance
                 using (HOGDescriptor des = new HOGDescriptor())
                 {
                     des.SetSVMDetector(HOGDescriptor.GetDefaultPeopleDetector());
-
                     //load the image to umat so it will automatically use opencl is available
                     UMat umat = image.ToUMat(AccessType.Read);
 
                     watch = Stopwatch.StartNew();
-
+                    
                     MCvObjectDetection[] results = des.DetectMultiScale(umat);
                     regions = new Rectangle[results.Length];
                     for (int i = 0; i < results.Length; i++)
