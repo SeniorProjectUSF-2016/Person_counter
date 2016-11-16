@@ -2,12 +2,17 @@
 //  Copyright (C) 2004-2016 by EMGU Corporation. All rights reserved.       
 //----------------------------------------------------------------------------
 
+using System.Threading.Tasks;
+using System.IO;
+using System.IO.Ports;
+
+
 using System.Runtime.InteropServices;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Drawing;   
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
@@ -60,10 +65,40 @@ namespace VideoSurveilance
                 arr[i] = value;
             }
         }
+
         public VideoSurveilance()
         {
-            InitializeComponent();
-            Run();
+            System.ComponentModel.IContainer components = new System.ComponentModel.Container();
+            SerialPort serialPort1 = new SerialPort("COM3");
+            serialPort1.BaudRate = 9600;
+            serialPort1.DtrEnable = true;
+            if (!serialPort1.IsOpen)
+            {
+                try
+                {
+                    serialPort1.Open();
+                    serialPort1.Write("T");
+                    serialPort1.Close();
+                }
+                catch
+                {
+                    MessageBox.Show("There was an error. Please make sure that the correct port was selected, and the device, plugged in.");
+                }
+            }
+            serialPort1.Open();
+
+
+            string sensor = serialPort1.ReadLine();
+
+            string posResult = "true";
+
+            if (String.Compare(sensor, posResult, true) == 1)
+            {
+                InitializeComponent();
+                Run();
+
+            }
+
         }
 
         void Run()
@@ -71,8 +106,8 @@ namespace VideoSurveilance
             try
             {
                 // test for test
-                _cameraCapture = new Capture();
-                _cameraCapture.FlipHorizontal = !_cameraCapture.FlipHorizontal;
+                _cameraCapture = new Capture(2);
+                //_cameraCapture.FlipHorizontal = !_cameraCapture.FlipHorizontal;
 
             }
             catch (Exception e)
@@ -103,7 +138,7 @@ namespace VideoSurveilance
 
             //ImageFrame.ROI = Rectangle.Empty;
             Rectangle roi = new Rectangle(213, 0, 213, 480); // set the roi image.ROI = new Rectangle(x, Y, Width, Height);
-            ImageFrame.ROI = roi;
+            //ImageFrame.ROI = roi;
 
             ImageFrame.Draw(roi, new Bgr(Color.Green), 5);
 
@@ -118,9 +153,9 @@ namespace VideoSurveilance
                 Rectangle[] results = FindPedestrian.Find(frame, true, out processingTime);
                 foreach (Rectangle rect in results)
                 {
-                    
 
-                    if (rect.Width >= 0)
+
+                    if (rect.Width >= 150)
                     {
                         ImageFrame.Draw(rect, new Bgr(Color.Red), 5);
                         //Console.WriteLine(index);
@@ -142,7 +177,7 @@ namespace VideoSurveilance
 
                             else
                             {
-                            
+
                                 Console.WriteLine(timeStamp);
                                 Console.WriteLine(rect.ToString());
                                 ++newimage;
