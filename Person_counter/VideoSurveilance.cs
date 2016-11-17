@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Drawing;   
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
@@ -118,7 +118,7 @@ namespace VideoSurveilance
                 Rectangle[] results = FindPedestrian.Find(frame, true, out processingTime);
                 foreach (Rectangle rect in results)
                 {
-                    
+
 
                     if (rect.Width >= 0)
                     {
@@ -142,7 +142,7 @@ namespace VideoSurveilance
 
                             else
                             {
-                            
+
                                 Console.WriteLine(timeStamp);
                                 Console.WriteLine(rect.ToString());
                                 ++newimage;
