@@ -18,6 +18,7 @@ namespace VideoSurveilance
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new VideoSurveilance());
+            
         }
     }
 }
