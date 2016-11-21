@@ -44,10 +44,10 @@ namespace VideoSurveilance
         private Rectangle[] arr = new Rectangle[10000];
         long processingTime;
         List<Mat> people = new List<Mat>();
-
+      
 
         private int counter = 0;
-        private int index = 0;
+
         private static BackgroundSubtractor _fgDetector;
         private static Emgu.CV.Cvb.CvBlobDetector _blobDetector;
         public static String GetTimestamp(DateTime value)
@@ -158,25 +158,7 @@ namespace VideoSurveilance
             Mat observedImage = new Mat();
 
 
-            VectorOfKeyPoint modelKeyPoints = new VectorOfKeyPoint();
-            VectorOfKeyPoint observedKeyPoint = new VectorOfKeyPoint();
 
-
-            VectorOfVectorOfDMatch matches = new VectorOfVectorOfDMatch();
-
-
-            //Image<Bgr, Byte> personimage = person.ToImage<Bgr, Byte>();
-
-
-
-
-            List<Rectangle> faces = new List<Rectangle>();
-            List<Rectangle> eyes = new List<Rectangle>();
-            //bool tryUseCuda = true;
-
-
-
-            //ImageFrame.ROI = Rectangle.Empty;
             Rectangle roi = new Rectangle(213, 0, 213, 480); // set the roi image.ROI = new Rectangle(x, Y, Width, Height);
             //ImageFrame.ROI = roi;
 
@@ -184,158 +166,48 @@ namespace VideoSurveilance
 
             if (ImageFrame != null)   // confirm that image is valid
             {
-                //Image<Gray, byte> grayframe = ImageFrame.Convert<Gray, byte>();
-
-                //DetectFace.Detect(
-                //   frame, "haarcascade_frontalface_default.xml", "haarcascade_eye.xml",
-                //   faces, eyes,
-                //   tryUseCuda,
-                //   out processingTime);
-
-                //foreach (Rectangle face in faces)
-                //{
-
-                //    arr[index] = face;
-
-                //    //CvInvoke.Rectangle(frame, face, new Bgr(Color.Red).MCvScalar, 2);
-                //    //counter++;
-                //    //Console.WriteLine(counter + " new image found");
-
-                //    if (index == 0)
-                //    {
-                //        //CvInvoke.Rectangle(image, face, new Bgr(Color.Red).MCvScalar, 2);
-
-                //        ImageFrame.Draw(face, new Bgr(Color.Red), 5);
-                //        Console.WriteLine(timeStamp);
-                //        Console.WriteLine(face.ToString());
-                //        newimage++;
-                //        Console.WriteLine("number of new images " + newimage);
-                //        index++;
-
-
-                //        // test arr[index].Contains((arr[index - 1]).Location)
-                //        // test arr[index].Contains((arr[index - 1]))
-                //    }
-                //    else
-                //    {
-
-                //        if (arr[index].IntersectsWith(arr[index - 1]))
-
-                //        {
-                //            Console.WriteLine("same image");
-                //            Console.WriteLine(face.ToString());
-                //            Console.WriteLine("number of new images " + newimage);
-                //            //index++;
-                //            Console.WriteLine(eyes);
-                //        }
-                //        else
-                //        {
-                //            ImageFrame.Draw(face, new Bgr(Color.Red), 5);
-                //            Console.WriteLine(timeStamp);
-                //            Console.WriteLine(face.ToString());
-                //            newimage++;
-                //            Console.WriteLine("number of new images " + newimage);
-                //            index++;
-                //        }
-
-
-
-                //    }
-                //}
 
                 Rectangle[] results = FindPedestrian.Find(frame, true, out processingTime);
-                foreach (Rectangle rect in results)
+                if (people.Count == 0)
                 {
-
-
-
-                    if (rect.Width >= 100)
+                    foreach (Rectangle rect in results)
                     {
-                        
-                        personROI.X = rect.X;
-                        personROI.Y = rect.Y;
-                        personROI.Width = rect.Width;
-                        personROI.Height = rect.Height;
 
-                        Mat person = new Mat(frame, personROI);
+                        if (rect.Width >= 150)
+                        {
+                            personROI.X = rect.X;
+                            personROI.Y = rect.Y;
+                            personROI.Width = rect.Width;
+                            personROI.Height = rect.Height;
 
-                        people.Add(person);
-                        
+                            Mat person = new Mat(frame, personROI);
+                            people.Add(person);
 
+                            ImageFrame.Draw(rect, new Bgr(Color.Red), 5);
+                            //Console.WriteLine(index);
+                        }
+                    }
 
-
-                        //Image<Bgr, Byte> personimage = person.ToImage<Bgr, Byte>();
-
-                        //personimage.ROI = personROI;
-                        
-                        
-                        
-
-
+                }
+                else
+                {
+                    foreach (Rectangle rect in results)
+                    {
                         ImageFrame.Draw(rect, new Bgr(Color.Red), 5);
-                        //Console.WriteLine(index);
-
-
-
-                        //index++;
-                        //arr[index] = rect;
-                        //if (index != 0)
-                        //{
-                        //    // test arr[index].Contains((arr[index - 1]).Location)
-                        //    // test arr[index].Contains((arr[index - 1]))
-
-                        //    if (arr[index].IntersectsWith(arr[index - 1]))
-
-                        //    {
-                        //        Console.WriteLine("same image");
-                        //        Console.WriteLine("number of new images " + newimage);
-
-                        //    }
-
-                        //    else
-                        //    {
-
-                        //        Console.WriteLine(timeStamp);
-                        //        Console.WriteLine(rect.ToString());
-                        //        ++newimage;
-                        //        Console.WriteLine("number of new images " + newimage);
-
-
-                        //    }
-
-                        //}
-                        //else { }
+                        var check = false;
+                        var temp = new List<Mat>(people);
+                        foreach (Mat aperson in people)
+                        {
+                            Mat img = new Mat(frame, rect);
+                            observedImage = aperson;
+                            modelImage = img;
+                            result = Draw(modelImage, observedImage, out matchTime, out check);
+                            if (check)
+                                temp.Add(img);
+                        }
+                        people = new List<Mat>(temp);
                     }
-
-
-
                 }
-
-
-
-                foreach (Mat aperson in people)
-                {
-                    observedImage = aperson;
-                    modelImage = frame;
-
-                    {
-
-                        result = DrawMatches.Draw(modelImage, observedImage, out matchTime);
-
-                        //DrawMatches.FindMatch(frame, aperson, out matchTime, out modelKeyPoints, out observedKeyPoint, matches, out mask, out homography);
-                        
-                        
-                        //if (result.IsEmpty == false)
-                        //{
-
-                        //}
-                        //ImageViewer.Show(result, String.Format("Matched using {0} in {1} milliseconds", CudaInvoke.HasCuda ? "GPU" : "CPU", matchTime));
-                    }
-
-                }
-
-
-
 
                 Mat smoothedFrame = new Mat();
                     CvInvoke.GaussianBlur(frame, smoothedFrame, new Size(3, 3), 1); //filter out noises
@@ -343,7 +215,7 @@ namespace VideoSurveilance
 
                     #region use the BG/FG detector to find the forground mask
                     Mat forgroundMask = new Mat();
-                    _fgDetector.Apply(smoothedFrame, forgroundMask);
+                    //_fgDetector.Apply(smoothedFrame, forgroundMask);
 
                     #endregion
                     CvBlobs blobs = new CvBlobs();
@@ -370,15 +242,11 @@ namespace VideoSurveilance
                 }
             //people.Clear();
             }
-        }
 
 
 
 
-
-    public static class DrawMatches
-    {
-        public static void FindMatch(Mat modelImage, Mat observedImage, out long matchTime, out VectorOfKeyPoint modelKeyPoints, out VectorOfKeyPoint observedKeyPoints, VectorOfVectorOfDMatch matches, out Mat mask, out Mat homography)
+        public bool FindMatch(Mat modelImage, Mat observedImage, out long matchTime, out VectorOfKeyPoint modelKeyPoints, out VectorOfKeyPoint observedKeyPoints, VectorOfVectorOfDMatch matches, out Mat mask, out Mat homography)
         {
             int newimage = 0;
             newimage++;
@@ -462,15 +330,17 @@ namespace VideoSurveilance
                     {
                         nonZeroCount = Features2DToolbox.VoteForSizeAndOrientation(modelKeyPoints, observedKeyPoints,
                            matches, mask, 1.5, 20);
+
                         if (nonZeroCount >= 4)
                             homography = Features2DToolbox.GetHomographyMatrixFromMatchedFeatures(modelKeyPoints,
                                observedKeyPoints, matches, mask, 2);
-                        if (nonZeroCount < 20)
+
+                        if (nonZeroCount > 20)
                         {
-                            Console.WriteLine("Person out of image");
-                            newimage--;
-                            Console.WriteLine("New image found " + newimage);
-                            Console.WriteLine("nonzero count " + nonZeroCount);
+                            ++counter;
+                            watch.Stop();
+                            matchTime = watch.ElapsedMilliseconds;
+                            return true;
                         }
                     }
 
@@ -478,6 +348,7 @@ namespace VideoSurveilance
                 }
             }
             matchTime = watch.ElapsedMilliseconds;
+            return false;
         }
 
         /// <summary>
@@ -487,7 +358,7 @@ namespace VideoSurveilance
         /// <param name="observedImage">The observed image</param>
         /// <param name="matchTime">The output total time for computing the homography matrix.</param>
         /// <returns>The model image and observed image, the matched features and homography projection.</returns>
-        public static Mat Draw(Mat modelImage, Mat observedImage, out long matchTime)
+        public Mat Draw(Mat modelImage, Mat observedImage, out long matchTime, out bool check)
         {
             int newimage = 0;
 
@@ -496,8 +367,8 @@ namespace VideoSurveilance
             VectorOfKeyPoint observedKeyPoints;
             using (VectorOfVectorOfDMatch matches = new VectorOfVectorOfDMatch())
             {
-                Mat mask;
-                FindMatch(modelImage, observedImage, out matchTime, out modelKeyPoints, out observedKeyPoints, matches,
+                Mat mask = new Mat();
+                check = FindMatch(modelImage, observedImage, out matchTime, out modelKeyPoints, out observedKeyPoints, matches,
                    out mask, out homography);
 
                 //Draw the matched keypoints
@@ -535,35 +406,7 @@ namespace VideoSurveilance
 
             }
         }
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        }
 
 
 
