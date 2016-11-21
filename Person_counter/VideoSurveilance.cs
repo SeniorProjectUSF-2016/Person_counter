@@ -124,8 +124,8 @@ namespace VideoSurveilance
             try
             {
                 // test for test
-                _cameraCapture = new Capture();
-                _cameraCapture.FlipHorizontal = !_cameraCapture.FlipHorizontal;
+                _cameraCapture = new Capture(2);
+                //_cameraCapture.FlipHorizontal = !_cameraCapture.FlipHorizontal;
 
             }
             catch (Exception e)
@@ -196,16 +196,25 @@ namespace VideoSurveilance
                         ImageFrame.Draw(rect, new Bgr(Color.Red), 5);
                         var check = false;
                         var temp = new List<Mat>(people);
+
                         foreach (Mat aperson in people)
                         {
                             Mat img = new Mat(frame, rect);
                             observedImage = aperson;
                             modelImage = img;
                             result = Draw(modelImage, observedImage, out matchTime, out check);
-                            if (check)
+                            if (!check)
+                            {
                                 temp.Add(img);
+                                ++counter;
+                                Console.WriteLine("Counter: " + counter);
+                                break;
+                            }
+
                         }
                         people = new List<Mat>(temp);
+
+                        Console.WriteLine("End for frame processing");
                     }
                 }
 
@@ -330,14 +339,14 @@ namespace VideoSurveilance
                     {
                         nonZeroCount = Features2DToolbox.VoteForSizeAndOrientation(modelKeyPoints, observedKeyPoints,
                            matches, mask, 1.5, 20);
+                        Console.WriteLine("Match Points: " + nonZeroCount);
 
                         if (nonZeroCount >= 4)
                             homography = Features2DToolbox.GetHomographyMatrixFromMatchedFeatures(modelKeyPoints,
                                observedKeyPoints, matches, mask, 2);
 
-                        if (nonZeroCount > 20)
+                        if (nonZeroCount > 15)
                         {
-                            ++counter;
                             watch.Stop();
                             matchTime = watch.ElapsedMilliseconds;
                             return true;
@@ -370,7 +379,7 @@ namespace VideoSurveilance
                 Mat mask = new Mat();
                 check = FindMatch(modelImage, observedImage, out matchTime, out modelKeyPoints, out observedKeyPoints, matches,
                    out mask, out homography);
-
+               // Console.WriteLine("Model points: " + modelKeyPoints.Size + "  Observed points:" + observedKeyPoints.Size + "  Match points:"+ matches.Size);
                 //Draw the matched keypoints
                 Mat result = new Mat();
                 Features2DToolbox.DrawMatches(modelImage, modelKeyPoints, observedImage, observedKeyPoints,
@@ -513,7 +522,7 @@ namespace VideoSurveilance
 
                         watch = Stopwatch.StartNew();
 
-                        MCvObjectDetection[] results = des.DetectMultiScale(umat,0, default(Size), default(Size), 1.05,2,false);
+                        MCvObjectDetection[] results = des.DetectMultiScale(umat,0, default(Size), default(Size), 1.15,2,false);
                         regions = new Rectangle[results.Length];
                         for (int i = 0; i < results.Length; i++)
                             regions[i] = results[i].Rect;
