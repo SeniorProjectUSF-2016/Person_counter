@@ -124,8 +124,8 @@ namespace VideoSurveilance
             try
             {
                 // test for test
-                _cameraCapture = new Capture(2);
-                //_cameraCapture.FlipHorizontal = !_cameraCapture.FlipHorizontal;
+                _cameraCapture = new Capture();
+                _cameraCapture.FlipHorizontal = !_cameraCapture.FlipHorizontal;
 
             }
             catch (Exception e)
